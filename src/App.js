@@ -12,12 +12,14 @@ import MenuIcon from '@mui/icons-material/Menu'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // Icons
+import { AccountBalance, ImportExport } from '@mui/icons-material'
 import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 // Components
 // import Home from './components/Home'
 import Login from './components/Login'
-import Presupuesto from './components/Presupuesto'
+import Presupuesto from './components/Presupuesto/Presupuesto'
+import Movimientos from './components/Presupuesto/Movimientos'
 // Material Ui Theme
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
@@ -66,9 +68,9 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: 'flex-end'
-}));
+}))
 
-// Firebase Auth
+// Firebase conf
 const auth = getAuth(app)
 const firestore = getFirestore(app)
 
@@ -82,7 +84,8 @@ const theme = createTheme({
       main: '#6ac11e'
     },
     tertiary: {
-      main: '#07131f'
+      main: '#07131f',
+      contrastText: '#ffffff'
     }
   }
 })
@@ -136,19 +139,19 @@ export default function App () {
         {user ?
           <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar position="fixed" open={open}>
+            <AppBar position='fixed' open={open} color='tertiary'>
               <Toolbar>
                 <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
+                  color='primary'
+                  aria-label='open drawer'
                   onClick={handleDrawerOpen}
-                  edge="start"
+                  edge='start'
                   sx={{ mr: 2, ...(open && { display: 'none' }) }}
                 >
                   <MenuIcon />
                 </IconButton>
-                <Typography variant="h6" noWrap component="div">
-                  DGSF
+                <Typography variant='h6' noWrap component='div'>
+                  Direccion General de Finanzas
                 </Typography>
               </Toolbar>
             </AppBar>
@@ -161,8 +164,8 @@ export default function App () {
                   boxSizing: 'border-box',
                 },
               }}
-              variant="persistent"
-              anchor="left"
+              variant='persistent'
+              anchor='left'
               open={open}
             >
               <DrawerHeader>
@@ -171,6 +174,7 @@ export default function App () {
                 </IconButton>
               </DrawerHeader>
               <Divider />
+              {/* Director */}
               {user.role === 'director' ?
                 <List>
                   {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
@@ -183,16 +187,21 @@ export default function App () {
                   ))}
                 </List>
               : '' }
+              {/* presupuesto */}
               {user.role === 'presupuesto' ?
                 <div>
                   <Divider />
                   <List>
-                    <Link to='/presupuesto'>
-                      <ListItem button>
-                        <ListItemIcon></ListItemIcon>
-                        <ListItemText primary='Presupuesto' />
-                      </ListItem>
-                    </Link>
+                    {['Presupuesto', 'Movimientos', 'Send email', 'Drafts'].map((text, index) => (
+                      <Link to={text} style={{ textDecoration: 'none', color: 'black' }}>
+                        <ListItem button key={text}>
+                          <ListItemIcon>
+                            {index % 2 === 0 ? <AccountBalance /> : <ImportExport />}
+                          </ListItemIcon>
+                          <ListItemText primary={text} />
+                        </ListItem>
+                      </Link>
+                    ))}
                   </List>
                 </div>
               : '' }
@@ -237,14 +246,14 @@ export default function App () {
                 <Route exact path='/perfil' component={Perfil} />
                 <Route exact path='/' component={Login} /> */}
                 {/* Presupuesto */}
-                <Route path='/presupuesto' element={<Presupuesto />} />
+                <Route path='/Presupuesto' element={<Presupuesto />} />
+                <Route path='/Movimientos' element={<Movimientos />} />
                 {/* <Route exact path='/presupuesto/:id' component={EditarPresupuesto} />
                 <Route exact path='/revolvente' component={Revolvente} />
                 <Route exact path='/archivos' component={Archivos} />
                 <Route exact path='/disponible' component={Disponible} />
                 <Route exact path='/contrarecibo' component={Contrarecibo} />
                 <Route exact path='/informe' component={Informe} />
-                <Route exact path='/movimientos' component={Movimientos} />
                 <Route exact path='/actualizar' component={Actualizar} /> */}
                 {/* Tesoreria */}
                 {/* <Route exact path='/caja' component={Caja} />
