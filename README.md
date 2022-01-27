@@ -1,4 +1,54 @@
-# Getting Started with Create React App
+# Finance
+
+Sistema de administración financiera.
+
+## Comenzando
+
+Estas instrucciones te permitirán obtener una copia dle proyecto en funcionamiento en tu maquina local para propósitos de desarrollo y pruebas.
+
+### Hecho con
+
+* [React](https://github.com/facebook/create-react-app) - Framework para Frontend.
+* [Firebase](https://firebase.google.com/?hl=es-419&gclid=Cj0KCQiA_8OPBhDtARIsAKQu0gZ6wOygipVUhDWUuYqIc8GSke3MAMiznbvlfPRZXP2YBKmO8F31TdUaApZYEALw_wcB&gclsrc=aw.ds) - Sistema de gestión de base de datos.
+* [Node.js](https://nodejs.org/es/) - Entorno para la capa de servidor basado en JavaScript.
+
+_Mira **Deployment** para conocer como desplegar el proyecto._
+
+### Requisitos
+
+Comprobamos si tenemos instalado **Node.js**, para comprobar si lo tenemos instalado ejecutaremos el siguiente comando en la terminal.
+
+```
+node -v
+```
+
+De igual manera veremos si tenemos instalado **React**.
+
+```
+npm view react version
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
