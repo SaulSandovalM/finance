@@ -82,7 +82,8 @@ const firestore = getFirestore(app)
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#ffffff'
+      main: '#fff',
+      contrastText: '#000'
     },
     secondary: {
       main: '#6ac11e'
@@ -203,22 +204,22 @@ export default function App () {
                   </Link>
                 }
                 {user.role === 'presupuesto' &&
-                  <Link to='/Movimientos' style={{ textDecoration: 'none', color: 'black' }}>
-                    <ListItem button>
-                      <ListItemIcon>
-                        <ImportExport />
-                      </ListItemIcon>
-                      <ListItemText primary={'Movimientos'} />
-                    </ListItem>
-                  </Link>
-                }
-                {user.role === 'presupuesto' &&
                   <Link to='/FondoRevolvente' style={{ textDecoration: 'none', color: 'black' }}>
                     <ListItem button>
                       <ListItemIcon>
                         <MonetizationOn />
                       </ListItemIcon>
                       <ListItemText primary={'Fondo Revolvente'} />
+                    </ListItem>
+                  </Link>
+                }
+                {user.role === 'presupuesto' &&
+                  <Link to='/Movimientos' style={{ textDecoration: 'none', color: 'black' }}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <ImportExport />
+                      </ListItemIcon>
+                      <ListItemText primary={'Movimientos'} />
                     </ListItem>
                   </Link>
                 }

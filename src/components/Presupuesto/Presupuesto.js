@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 // Material Ui
-import { Button, Grid, TextField, Snackbar } from '@mui/material'
+import { Button, Grid, TextField, Snackbar, Paper } from '@mui/material'
 import Alert from '@mui/material/Alert'
 import NumberFormat from 'react-number-format'
 import PropTypes from 'prop-types'
@@ -185,7 +185,7 @@ export default function Presupuesto (props) {
   state.cpa = cpa
 
   return (
-    <div>
+    <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 } }}>
       <Snackbar
         open={open}
         autoHideDuration={5000}
@@ -803,6 +803,6 @@ export default function Presupuesto (props) {
           <Button variant='contained' onClick={writePresupuestoData} color='tertiary'>Enviar</Button>
         </Grid>
       </Grid>
-    </div>
+    </Paper>
   )
 }
