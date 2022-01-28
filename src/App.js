@@ -10,7 +10,7 @@ import { Box, Drawer, CssBaseline, Toolbar, List, Typography, Divider, IconButto
 import MuiAppBar from '@mui/material/AppBar'
 import MenuIcon from '@mui/icons-material/Menu'
 // Icons
-import { AccountBalance, ImportExport } from '@mui/icons-material'
+import { AccountBalance, ImportExport, MonetizationOn } from '@mui/icons-material'
 import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
@@ -18,8 +18,12 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 // Components
 // import Home from './components/Home'
 import Login from './components/Login'
-import Presupuesto from './components/Presupuesto/Presupuesto'
-import Movimientos from './components/Presupuesto/Movimientos'
+// Presupuesto
+import Presupuesto from './components/presupuesto/Presupuesto'
+import Movimientos from './components/presupuesto/Movimientos'
+import FondoRevolvente from './components/presupuesto/FondoRevolvente'
+// Fondos
+import Comprometidos from './components/fondos/Comprometidos'
 // Material Ui Theme
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
@@ -139,10 +143,9 @@ export default function App () {
         {user ?
           <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar position='fixed' open={open} color='tertiary'>
+            <AppBar position='fixed' open={open}>
               <Toolbar>
                 <IconButton
-                  color='primary'
                   aria-label='open drawer'
                   onClick={handleDrawerOpen}
                   edge='start'
@@ -162,7 +165,7 @@ export default function App () {
                 '& .MuiDrawer-paper': {
                   width: drawerWidth,
                   boxSizing: 'border-box',
-                },
+                }
               }}
               variant='persistent'
               anchor='left'
@@ -188,35 +191,50 @@ export default function App () {
                 </List>
               : '' }
               {/* presupuesto */}
-              {user.role === 'presupuesto' ?
-                <div>
-                  <Divider />
-                  <List>
-                    {['Presupuesto', 'Movimientos', 'Send email', 'Drafts'].map((text, index) => (
-                      <Link to={text} style={{ textDecoration: 'none', color: 'black' }}>
-                        <ListItem button key={text}>
-                          <ListItemIcon>
-                            {index % 2 === 0 ? <AccountBalance /> : <ImportExport />}
-                          </ListItemIcon>
-                          <ListItemText primary={text} />
-                        </ListItem>
-                      </Link>
-                    ))}
-                  </List>
-                </div>
-              : '' }
+              <List>
+                {user.role === 'presupuesto' &&
+                  <Link to='/Presupuesto' style={{ textDecoration: 'none', color: 'black' }}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <AccountBalance />
+                      </ListItemIcon>
+                      <ListItemText primary={'Presupuesto'} />
+                    </ListItem>
+                  </Link>
+                }
+                {user.role === 'presupuesto' &&
+                  <Link to='/Movimientos' style={{ textDecoration: 'none', color: 'black' }}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <ImportExport />
+                      </ListItemIcon>
+                      <ListItemText primary={'Movimientos'} />
+                    </ListItem>
+                  </Link>
+                }
+                {user.role === 'presupuesto' &&
+                  <Link to='/FondoRevolvente' style={{ textDecoration: 'none', color: 'black' }}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <MonetizationOn />
+                      </ListItemIcon>
+                      <ListItemText primary={'Fondo Revolvente'} />
+                    </ListItem>
+                  </Link>
+                }
+              </List>
               {user.role === 'tesoreria' ?
                 <div>
                   <Divider />
                   <List>
-                    {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                    {/* ['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
                       <ListItem button key={text}>
                         <ListItemIcon>
                           {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                         </ListItemIcon>
                         <ListItemText primary={text} />
                       </ListItem>
-                    ))}
+                    )) */}
                   </List>
                 </div>
               : '' }
@@ -224,7 +242,7 @@ export default function App () {
                 <div>
                   <Divider />
                   <List>
-                    {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                    {['Fondos'].map((text, index) => (
                       <ListItem button key={text}>
                         <ListItemIcon>
                           {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
@@ -247,9 +265,10 @@ export default function App () {
                 <Route exact path='/' component={Login} /> */}
                 {/* Presupuesto */}
                 <Route path='/Presupuesto' element={<Presupuesto />} />
-                <Route path='/Movimientos' element={<Movimientos />} />
+                <Route path='/Movimientos' element={<Movimientos user={user} />} />
+                <Route path='/FondoRevolvente' element={<FondoRevolvente />} />
                 {/* <Route exact path='/presupuesto/:id' component={EditarPresupuesto} />
-                <Route exact path='/revolvente' component={Revolvente} />
+
                 <Route exact path='/archivos' component={Archivos} />
                 <Route exact path='/disponible' component={Disponible} />
                 <Route exact path='/contrarecibo' component={Contrarecibo} />
@@ -266,6 +285,7 @@ export default function App () {
                 {/* Validacion */}
                 {/* <Route exact path='/validacion' component={Validacion} /> */}
                 {/* Fondos */}
+                <Route path='/Comprometidos' element={<Comprometidos />} />
                 {/* <Route exact path='/fondos' component={Fondos} />
                 <Route exact path='/user' component={BoardFondo} />
                 <Route exact path='/mod' component={BoardManager} />

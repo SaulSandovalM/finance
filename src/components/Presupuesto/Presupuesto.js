@@ -190,7 +190,7 @@ export default function Presupuesto (props) {
         open={open}
         autoHideDuration={5000}
         onClose={handleClose}
-         anchorOrigin={{
+        anchorOrigin={{
           vertical: 'top',
           horizontal: 'right',
         }}

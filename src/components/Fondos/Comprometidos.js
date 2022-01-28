@@ -33,27 +33,27 @@ export default function Comprometidos () {
     setChecked(newChecked)
   }
 
-  const numberOfChecked = (items) => intersection(checked, items).length;
+  const numberOfChecked = (items) => intersection(checked, items).length
 
   const handleToggleAll = (items) => () => {
     if (numberOfChecked(items) === items.length) {
-      setChecked(not(checked, items));
+      setChecked(not(checked, items))
     } else {
-      setChecked(union(checked, items));
+      setChecked(union(checked, items))
     }
-  };
+  }
 
   const handleCheckedRight = () => {
-    setRight(right.concat(leftChecked));
-    setLeft(not(left, leftChecked));
-    setChecked(not(checked, leftChecked));
-  };
+    setRight(right.concat(leftChecked))
+    setLeft(not(left, leftChecked))
+    setChecked(not(checked, leftChecked))
+  }
 
   const handleCheckedLeft = () => {
-    setLeft(left.concat(rightChecked));
-    setRight(not(right, rightChecked));
-    setChecked(not(checked, rightChecked));
-  };
+    setLeft(left.concat(rightChecked))
+    setRight(not(right, rightChecked))
+    setChecked(not(checked, rightChecked))
+  }
 
   const customList = (title, items) => (
     <Card>
@@ -67,18 +67,16 @@ export default function Comprometidos () {
               numberOfChecked(items) !== items.length && numberOfChecked(items) !== 0
             }
             disabled={items.length === 0}
-            inputProps={{
-              'aria-label': 'all items selected',
-            }}
+            color='tertiary'
           />
         }
         title={title}
-        subheader={`${numberOfChecked(items)}/${items.length} selected`}
+        subheader={`${numberOfChecked(items)}/${items.length} seleccionadas`}
       />
       <Divider />
       <List
         sx={{
-          width: 200,
+          width: '100%',
           height: 230,
           bgcolor: 'background.paper',
           overflow: 'auto',
@@ -89,7 +87,6 @@ export default function Comprometidos () {
       >
         {items.map((value) => {
           const labelId = `transfer-list-all-item-${value}-label`;
-
           return (
             <ListItem
               key={value}
@@ -102,9 +99,7 @@ export default function Comprometidos () {
                   checked={checked.indexOf(value) !== -1}
                   tabIndex={-1}
                   disableRipple
-                  inputProps={{
-                    'aria-labelledby': labelId,
-                  }}
+                  color='tertiary'
                 />
               </ListItemIcon>
               <ListItemText id={labelId} primary={`List item ${value + 1}`} />
@@ -118,8 +113,8 @@ export default function Comprometidos () {
 
   return (
     <Grid container spacing={2} justifyContent='center' alignItems='center'>
-      <Grid item>{customList('Choices', left)}</Grid>
-      <Grid item>
+      <Grid item xs={12} md={12} lg={5.5}>{customList('Facturas', left)}</Grid>
+      <Grid item xs={12} md={12} lg={1}>
         <Grid container direction='column' alignItems='center'>
           <Button
             sx={{ my: 0.5 }}
@@ -128,6 +123,7 @@ export default function Comprometidos () {
             onClick={handleCheckedRight}
             disabled={leftChecked.length === 0}
             aria-label='move selected right'
+            color='tertiary'
           >
             &gt;
           </Button>
@@ -138,12 +134,13 @@ export default function Comprometidos () {
             onClick={handleCheckedLeft}
             disabled={rightChecked.length === 0}
             aria-label='move selected left'
+            color='tertiary'
           >
             &lt;
           </Button>
         </Grid>
       </Grid>
-      <Grid item>{customList('Chosen', right)}</Grid>
+      <Grid item xs={12} md={12} lg={5.5}>{customList('Facturas', right)}</Grid>
     </Grid>
   );
 }
