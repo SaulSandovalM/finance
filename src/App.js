@@ -10,7 +10,7 @@ import { Box, Drawer, CssBaseline, Toolbar, List, Typography, Divider, IconButto
 import MuiAppBar from '@mui/material/AppBar'
 import MenuIcon from '@mui/icons-material/Menu'
 // Icons
-import { AccountBalance, ImportExport, MonetizationOn } from '@mui/icons-material'
+import { AccountBalance, ImportExport } from '@mui/icons-material'
 import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
@@ -21,7 +21,7 @@ import Login from './components/Login'
 // Presupuesto
 import Presupuesto from './components/presupuesto/Presupuesto'
 import Movimientos from './components/presupuesto/Movimientos'
-import FondoRevolvente from './components/presupuesto/FondoRevolvente'
+// import FondoRevolvente from './components/presupuesto/FondoRevolvente'
 // Fondos
 import Comprometidos from './components/fondos/Comprometidos'
 // Material Ui Theme
@@ -203,7 +203,7 @@ export default function App () {
                     </ListItem>
                   </Link>
                 }
-                {user.role === 'presupuesto' &&
+                {/* user.role === 'presupuesto' &&
                   <Link to='/FondoRevolvente' style={{ textDecoration: 'none', color: 'black' }}>
                     <ListItem button>
                       <ListItemIcon>
@@ -212,7 +212,7 @@ export default function App () {
                       <ListItemText primary={'Fondo Revolvente'} />
                     </ListItem>
                   </Link>
-                }
+                */}
                 {user.role === 'presupuesto' &&
                   <Link to='/Movimientos' style={{ textDecoration: 'none', color: 'black' }}>
                     <ListItem button>
@@ -267,9 +267,8 @@ export default function App () {
                 {/* Presupuesto */}
                 <Route path='/Presupuesto' element={<Presupuesto />} />
                 <Route path='/Movimientos' element={<Movimientos user={user} />} />
-                <Route path='/FondoRevolvente' element={<FondoRevolvente />} />
                 {/* <Route exact path='/presupuesto/:id' component={EditarPresupuesto} />
-
+                <Route path='/FondoRevolvente' element={<FondoRevolvente />} />
                 <Route exact path='/archivos' component={Archivos} />
                 <Route exact path='/disponible' component={Disponible} />
                 <Route exact path='/contrarecibo' component={Contrarecibo} />

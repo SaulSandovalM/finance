@@ -30,18 +30,14 @@ import {
 import PropTypes from 'prop-types'
 import NumberFormat from 'react-number-format'
 // Firebase
-import { getDatabase, ref, child, get } from 'firebase/database'
+import { getDatabase, ref, child, get, orderByChild } from 'firebase/database'
 
 // Fecha actual
-const date = new Date().toLocaleDateString()
-
-const addresses = ['1 MUI Drive', 'Reactville', 'Anytown', '99999', 'USA']
-const payments = [
-  { name: 'Fecha', detail: date },
-  { name: 'Card holder', detail: 'Mr John Smith' },
-  { name: 'Card number', detail: 'xxxx-xxxx-xxxx-1234' },
-  { name: 'Expiry date', detail: '04/2024' }
-];
+var today = new Date()
+var meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+var diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+var f = new Date()
+today = diasSemana[f.getDay()] + ', ' + f.getDate() + ' de ' + meses[f.getMonth()] + ' de ' + f.getFullYear()
 
 function NumberFormatCustom (props) {
   const { inputRef, onChange, ...other } = props
@@ -70,8 +66,6 @@ NumberFormatCustom.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired
 }
-
-const steps = ['Partida inicial', 'Partida destino', 'Resumen']
 
 // Table example
 const columns = [
@@ -107,22 +101,31 @@ const rows = [
 ];
 
 export default function Movimientos (props) {
+  const [steps, setSteps] = useState(['Partida inicial', 'Partida destino', 'Resumen'])
+  const [tipoMovimiento, setTipoMovimiento] = useState('')
+  const [up, setUp] = useState('')
+  const [partida, setPartida] = useState('')
+  const [rubro, setRubro] = useState('')
+  const [partidaList, setPartidaList] = useState([])
+  const [rubroList, setRubroList] = useState([])
+  const [inicialId, setInicialId] = useState([])
+  // States de Partida Destino
+  const [upDestino, setUpDestino] = useState('')
+  const [partidaDestinoList, setPartidaDestinoList] = useState([])
+  const [partidaDestino, setPartidaDestino] = useState('')
+  const [rubroDestinoList, setRubroDestinoList] = useState([])
+  const [rubroDestino, setRubroDestino] = useState('')
+  const [destinoId, setDestinoId] = useState([])
+  //
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(13)
   const [activeStep, setActiveStep] = useState(0)
   const [presupuesto, setPresupuesto] = useState([])
   const [state, setState] = useState({
-    tipoMovimiento: '',
-    up: '',
-    partida: '',
-    rubro: '',
     cantidad: 0,
     oficioAutorizacion: '',
     mes: '',
     // States de Partida Destino
-    upDestino: '',
-    partidaDestino: '',
-    rubroDestino: '',
     cantidadDestino: 0,
     mesDestino: ''
   })
@@ -158,14 +161,12 @@ export default function Movimientos (props) {
   useEffect(() => {
     // Get presupuesto
     const dbRef = ref(getDatabase())
-    get(child(dbRef, 'presupuesto')).then((snapshot) => {
+    get(child(dbRef, 'presupuesto'), orderByChild('up')).then((snapshot) => {
       if (snapshot.exists()) {
         var arrayPresupuesto = []
         snapshot.forEach((child) => {
           arrayPresupuesto.push({
-            up: child.val().up,
-            partida: child.val().ogasto,
-            rubro: child.val().rubro
+            up: child.val().up
           })
         })
         setPresupuesto(arrayPresupuesto)
@@ -176,6 +177,188 @@ export default function Movimientos (props) {
       console.error(error)
     })
   }, [])
+
+  const handleChangeUp = (event) => {
+    setUp(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto'), orderByChild('ogasto')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arrayPartida = []
+        snapshot.forEach((child) => {
+          if (child.val().up === event.target.value) {
+            arrayPartida.push({
+              partida: child.val().ogasto,
+            })
+          }
+        })
+        let partidaFilter = arrayPartida.map(item => { return item.partida })
+        let resultPartida = partidaFilter.filter((item, index) => { return partidaFilter.indexOf(item) === index })
+        setPartidaList(resultPartida)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  const handleChangePartida = (event) => {
+    setPartida(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto'), orderByChild('rubro')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arrayRubro = []
+        snapshot.forEach((child) => {
+          if (child.val().up === up && child.val().ogasto === event.target.value) {
+            arrayRubro.push({
+              rubro: child.val().rubro,
+            })
+          }
+        })
+        let partidaFilter = arrayRubro.map(item => { return item.rubro })
+        let resultPartida = partidaFilter.filter((item, index) => { return partidaFilter.indexOf(item) === index })
+        setRubroList(resultPartida)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  const handleChangeRubro = (event) => {
+    setRubro(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arraySelect = []
+        snapshot.forEach((child) => {
+          if (child.val().up === up && child.val().ogasto === partida && child.val().rubro === event.target.value) {
+            arraySelect.push({
+              id: child.key,
+              nombreProyecto: child.val().nombreProyecto
+            })
+          }
+        })
+        setInicialId(arraySelect)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  // Group by up
+  let upFilter = presupuesto.map(item => { return item.up })
+  let resultUp = upFilter.filter((item, index) => { return upFilter.indexOf(item) === index })
+
+  const handleChangeUpDestino = (event) => {
+    setUpDestino(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto'), orderByChild('ogasto')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arrayPartidaDestino = []
+        snapshot.forEach((child) => {
+          if (child.val().up === event.target.value) {
+            arrayPartidaDestino.push({
+              partida: child.val().ogasto,
+            })
+          }
+        })
+        let partidaDestinoFilter = arrayPartidaDestino.map(item => { return item.partida })
+        let resultPartidaDestino = partidaDestinoFilter.filter((item, index) => { return partidaDestinoFilter.indexOf(item) === index })
+        setPartidaDestinoList(resultPartidaDestino)
+        console.log(resultPartidaDestino)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  const handleChangePartidaDestino = (event) => {
+    setPartidaDestino(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto'), orderByChild('rubro')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arrayRubroDestino = []
+        snapshot.forEach((child) => {
+          if (child.val().up === upDestino && child.val().ogasto === event.target.value) {
+            arrayRubroDestino.push({
+              rubro: child.val().rubro,
+            })
+          }
+        })
+        let partidaDestinoFilter = arrayRubroDestino.map(item => { return item.rubro })
+        let resultPartidaDestino = partidaDestinoFilter.filter((item, index) => { return partidaDestinoFilter.indexOf(item) === index })
+        setRubroDestinoList(resultPartidaDestino)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  const handleChangeRubroDestino = (event) => {
+    setRubroDestino(event.target.value)
+    const dbRef = ref(getDatabase())
+    get(child(dbRef, 'presupuesto')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arraySelectDestino = []
+        snapshot.forEach((child) => {
+          if (child.val().up === upDestino && child.val().ogasto === partidaDestino && child.val().rubro === event.target.value) {
+            arraySelectDestino.push({
+              id: child.key,
+              nombreProyecto: child.val().nombreProyecto
+            })
+          }
+        })
+        setDestinoId(arraySelectDestino)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }
+
+  const handleChangeTipoMovimiento = (event) => {
+    setTipoMovimiento(event.target.value)
+    if (event.target.value === 'Ampliación' || event.target.value === 'Reduccion') {
+      setSteps(['Partida inicial', 'Resumen'])
+    } else {
+      setSteps(['Partida inicial', 'Partida destino', 'Resumen'])
+    }
+  }
+
+  const handleSubmit = (event) => {
+    setTipoMovimiento('')
+    setUp('')
+    setPartida('')
+    setRubro('')
+    setPartidaList([])
+    setRubroList([])
+    setInicialId([])
+    // States de Partida Destino
+    setUpDestino('')
+    setPartidaDestinoList([])
+    setPartidaDestino('')
+    setRubroDestinoList([])
+    setRubroDestino('')
+    setDestinoId([])
+    setState({
+      cantidad: 0,
+      oficioAutorizacion: '',
+      mes: '',
+      // States de Partida Destino
+      cantidadDestino: 0,
+      mesDestino: ''
+    })
+    handleNext()
+  }
 
   return (
     <div>
@@ -202,8 +385,8 @@ export default function Movimientos (props) {
                     <Typography variant='subtitle1'>
                       Tu order es la numero #202200001. Hemos afectado la partida correspondiente, podra ver la afectación en el menu Disponible.
                     </Typography>
-                    <Button variant='contained' onClick={handleReset} sx={{ mt: 3, ml: 1 }}>
-                      Finalizar
+                    <Button variant='contained' onClick={handleReset} sx={{ mt: 3, ml: 1 }} color='secondary'>
+                      Volver
                     </Button>
                   </Fragment>
                 ) : (
@@ -218,18 +401,16 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Tipo de Movimiento</InputLabel>
                               <Select
-                                value={state.tipoMovimiento}
+                                value={tipoMovimiento}
                                 label='Tipo de Movimiento'
                                 name='tipoMovimiento'
-                                onChange={handleChange}
+                                onChange={handleChangeTipoMovimiento}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                <MenuItem value='Ampliacion'>Ampliación</MenuItem>
+                                <MenuItem value='Ampliación'>Ampliación</MenuItem>
                                 <MenuItem value='Reduccion'>Reducción</MenuItem>
                                 <MenuItem value='Transferencia'>Transferencia</MenuItem>
                                 <MenuItem value='Saldos'>Saldos</MenuItem>
+                                <MenuItem value='Fondo Revolvente'>Fondo Revolvente</MenuItem>
                               </Select>
                             </FormControl>
                           </Grid>
@@ -237,15 +418,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Unidad presupuestal</InputLabel>
                               <Select
-                                value={state.up}
+                                value={up}
                                 label='Unidad presupuestal'
                                 name='up'
-                                onChange={handleChange}
+                                onChange={handleChangeUp}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item.up}>{item.up}</MenuItem>)}
+                                {resultUp.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -253,15 +431,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Partida</InputLabel>
                               <Select
-                                value={state.partida}
+                                value={partida}
                                 label='Partida'
                                 name='partida'
-                                onChange={handleChange}
+                                onChange={handleChangePartida}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item.partida}>{item.partida}</MenuItem>)}
+                                {partidaList.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -269,15 +444,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Rubro</InputLabel>
                               <Select
-                                value={state.rubro}
+                                value={rubro}
                                 label='Rubro'
                                 name='rubro'
-                                onChange={handleChange}
+                                onChange={handleChangeRubro}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item.rubro}>{item.rubro}</MenuItem>)}
+                                {rubroList.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -336,9 +508,22 @@ export default function Movimientos (props) {
                             </FormControl>
                           </Grid>
                         </Grid>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            variant='contained'
+                            onClick={handleNext}
+                            sx={{ mt: 3, ml: 1 }}
+                            color='tertiary'
+                            disabled={!tipoMovimiento || !state.cantidad || !state.oficioAutorizacion || !state.mes || !up || !partida || !rubro}
+                          >
+                            {activeStep === steps.length - 1 ? 'Finalizar' : 'Siguiente'}
+                          </Button>
+                        </Box>
                       </Fragment>
                     }
-                    {activeStep === 1 &&
+                    {(tipoMovimiento === 'Ampliación' || tipoMovimiento === 'Reduccion')
+                      ? activeStep === ''
+                      : activeStep === 1 &&
                       <Fragment>
                         <Typography variant='h6' gutterBottom>
                           Partida destino
@@ -348,15 +533,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Unidad presupuestal</InputLabel>
                               <Select
-                                value={state.upDestino}
+                                value={upDestino}
                                 label='Unidad presupuestal'
                                 name='upDestino'
-                                onChange={handleChange}
+                                onChange={handleChangeUpDestino}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item}>{item.up}</MenuItem>)}
+                                {resultUp.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -364,15 +546,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Partida</InputLabel>
                               <Select
-                                value={state.partidaDestino}
+                                value={partidaDestino}
                                 label='Partida'
                                 name='partidaDestino'
-                                onChange={handleChange}
+                                onChange={handleChangePartidaDestino}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item}>{item.partida}</MenuItem>)}
+                                {partidaDestinoList.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -380,15 +559,12 @@ export default function Movimientos (props) {
                             <FormControl required fullWidth variant='standard' color='tertiary'>
                               <InputLabel>Rubro</InputLabel>
                               <Select
-                                value={state.rubroDestino}
+                                value={rubroDestino}
                                 label='Rubro'
                                 name='rubroDestino'
-                                onChange={handleChange}
+                                onChange={handleChangeRubroDestino}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
-                                {presupuesto.map(item => <MenuItem value={item}>{item.rubro}</MenuItem>)}
+                                {rubroDestinoList.map(item => <MenuItem value={item}>{item}</MenuItem>)}
                               </Select>
                             </FormControl>
                           </Grid>
@@ -435,26 +611,47 @@ export default function Movimientos (props) {
                             </FormControl>
                           </Grid>
                         </Grid>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          {activeStep !== 0 && (
+                            <Button variant='outlined' onClick={handleBack} sx={{ mt: 3, ml: 1 }} color='tertiary'>
+                              Atras
+                            </Button>
+                          )}
+                          <Button
+                            variant='contained'
+                            onClick={handleNext}
+                            sx={{ mt: 3, ml: 1 }}
+                            color='tertiary'
+                            disabled={!upDestino || !partidaDestino || !rubroDestino || !state.cantidadDestino || !state.mesDestino}
+                          >
+                            {activeStep === steps.length - 1 ? 'Finalizar' : 'Siguiente'}
+                          </Button>
+                        </Box>
                       </Fragment>
                     }
-                    {activeStep === 2 &&
+                    {((tipoMovimiento === 'Ampliación' || tipoMovimiento === 'Reduccion')
+                      ? activeStep === 1
+                      : activeStep === 2) &&
                       <Fragment>
                         <Typography variant='h6' gutterBottom>
                           Resumen
                         </Typography>
                         <List disablePadding>
                           <ListItem sx={{ py: 1, px: 0 }}>
-                            <ListItemText primary={'Partida inicial'} secondary={'Nombre de la partida'} />
-                            <Typography variant='body2'>{state.cantidad}</Typography>
+                            <ListItemText primary={'Partida inicial'} secondary={inicialId[0].nombreProyecto} />
+                            <Typography variant='body2'>$ {parseFloat(state.cantidad).toFixed(2)}</Typography>
                           </ListItem>
-                          <ListItem sx={{ py: 1, px: 0 }}>
-                            <ListItemText primary={'Partida destino'} secondary={'Nombre de la partida'} />
-                            <Typography variant='body2'>{state.cantidadDestino}</Typography>
-                          </ListItem>
+                          {(tipoMovimiento === 'Ampliación' || tipoMovimiento === 'Reduccion')
+                            ? ''
+                            : <ListItem sx={{ py: 1, px: 0 }}>
+                                <ListItemText primary={'Partida destino'} secondary={destinoId[0].nombreProyecto} />
+                                <Typography variant='body2'>$ {parseFloat(state.cantidadDestino).toFixed(2)}</Typography>
+                              </ListItem>
+                          }
                           <ListItem sx={{ py: 1, px: 0 }}>
                             <ListItemText primary='Total' />
                             <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
-                              $ {parseFloat(state.cantidad + state.cantidadDestino).toFixed(2)}
+                              $ {(parseFloat(state.cantidad) + parseFloat(state.cantidadDestino)).toFixed(2)}
                             </Typography>
                           </ListItem>
                         </List>
@@ -464,38 +661,65 @@ export default function Movimientos (props) {
                               Realizo
                             </Typography>
                             <Typography gutterBottom>{props.user.email}</Typography>
-                            <Typography gutterBottom>{addresses.join(', ')}</Typography>
+                            <Typography gutterBottom>{today}</Typography>
                           </Grid>
                           <Grid item container direction='column' xs={12} sm={6}>
                             <Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
                               Detalles
                             </Typography>
                             <Grid container>
-                              {payments.map((payment) => (
-                                <Fragment key={payment.name}>
-                                  <Grid item xs={6}>
-                                    <Typography gutterBottom>{payment.name}</Typography>
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <Typography gutterBottom>{payment.detail}</Typography>
-                                  </Grid>
-                                </Fragment>
-                              ))}
+                              <Fragment>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>Tipo</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>{tipoMovimiento}</Typography>
+                                </Grid>
+                              </Fragment>
+                              <Fragment>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>Up</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>{up}</Typography>
+                                </Grid>
+                              </Fragment>
+                              <Fragment>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>Partida</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>{partida}</Typography>
+                                </Grid>
+                              </Fragment>
+                              <Fragment>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>Rubro</Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography gutterBottom>{rubro}</Typography>
+                                </Grid>
+                              </Fragment>
                             </Grid>
                           </Grid>
                         </Grid>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          {activeStep !== 0 && (
+                            <Button variant='outlined' onClick={handleBack} sx={{ mt: 3, ml: 1 }} color='tertiary'>
+                              Atras
+                            </Button>
+                          )}
+                          <Button
+                            variant='contained'
+                            sx={{ mt: 3, ml: 1 }}
+                            color='tertiary'
+                            onClick={handleSubmit}
+                          >
+                            Finalizar
+                          </Button>
+                        </Box>
                       </Fragment>
                     }
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      {activeStep !== 0 && (
-                        <Button variant='outlined' onClick={handleBack} sx={{ mt: 3, ml: 1 }} color='tertiary'>
-                          Atras
-                        </Button>
-                      )}
-                      <Button variant='contained' onClick={handleNext} sx={{ mt: 3, ml: 1 }} color='tertiary'>
-                        {activeStep === steps.length - 1 ? 'Finalizar' : 'Siguiente'}
-                      </Button>
-                    </Box>
                   </Fragment>
                 )}
               </Fragment>
@@ -541,13 +765,14 @@ export default function Movimientos (props) {
                 </Table>
               </TableContainer>
               <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
+                rowsPerPageOptions={[]}
                 component='div'
                 count={rows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
+                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
               />
             </Paper>
           </Grid>
