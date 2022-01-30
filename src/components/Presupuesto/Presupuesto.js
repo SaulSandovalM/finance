@@ -106,7 +106,7 @@ export default function Presupuesto (props) {
     setOpen(false)
   }
 
-  function writePresupuestoData () {
+  function savePresupuestoData () {
     const db = getDatabase()
     if (state.year && state.rm && state.ur && state.up && state.rubro && state.tg && state.ogasto && state.f && state.fu && state.sf && state.eje &&
     state.s && state.prog && state.sp && state.obj && state.proy && state.est && state.obra && state.ben && state.eg && state.mi && state.pr &&
@@ -800,7 +800,7 @@ export default function Presupuesto (props) {
           />
         </Grid>
         <Grid container direction="row" justifyContent="flex-end" alignItems="center" sx={{ mt: '25px' }}>
-          <Button variant='contained' onClick={writePresupuestoData} color='tertiary'>Enviar</Button>
+          <Button variant='contained' onClick={savePresupuestoData} color='tertiary'>Enviar</Button>
         </Grid>
       </Grid>
     </Paper>

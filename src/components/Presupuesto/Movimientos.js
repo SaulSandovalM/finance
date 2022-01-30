@@ -335,6 +335,26 @@ export default function Movimientos (props) {
   }
 
   const handleSubmit = (event) => {
+    const db = getDatabase()
+    var saveInicial = {
+      tipoMovimiento: tipoMovimiento,
+      up: up,
+      partida: partida,
+      rubro: rubro,
+      importe: state.cantidad,
+      oficioAutorizacion: state.oficioAutorizacion,
+      mesAfectado: state.mes,
+      // Partida Destino
+      upDestino: upDestino,
+      partidaDestino: partidaDestino,
+      rubroDestino: rubroDestino,
+      cantidadDestino: state.cantidadDestino,
+      mesDestino: state.mesDestino,
+      // idPartidaAfectada
+      idPartidaAfectada: inicialId[0].id
+    }
+    console.log(saveInicial)
+
     setTipoMovimiento('')
     setUp('')
     setPartida('')
@@ -492,18 +512,18 @@ export default function Movimientos (props) {
                                 <MenuItem value=''>
                                   <em>Ninguno</em>
                                 </MenuItem>
-                                <MenuItem value='Enero'>Enero</MenuItem>
-                                <MenuItem value='Febrero'>Febrero</MenuItem>
-                                <MenuItem value='Marzo'>Marzo</MenuItem>
-                                <MenuItem value='Abril'>Abril</MenuItem>
-                                <MenuItem value='Mayo'>Mayo</MenuItem>
-                                <MenuItem value='Junio'>Junio</MenuItem>
-                                <MenuItem value='Julio'>Julio</MenuItem>
-                                <MenuItem value='Agosto'>Agosto</MenuItem>
-                                <MenuItem value='Septiembre'>Septiembre</MenuItem>
-                                <MenuItem value='Octubre'>Octubre</MenuItem>
-                                <MenuItem value='Noviembre'>Noviembre</MenuItem>
-                                <MenuItem value='Diciembre'>Diciembre</MenuItem>
+                                <MenuItem value='enero'>Enero</MenuItem>
+                                <MenuItem value='febrero'>Febrero</MenuItem>
+                                <MenuItem value='marzo'>Marzo</MenuItem>
+                                <MenuItem value='abril'>Abril</MenuItem>
+                                <MenuItem value='mayo'>Mayo</MenuItem>
+                                <MenuItem value='junio'>Junio</MenuItem>
+                                <MenuItem value='julio'>Julio</MenuItem>
+                                <MenuItem value='agosto'>Agosto</MenuItem>
+                                <MenuItem value='septiembre'>Septiembre</MenuItem>
+                                <MenuItem value='octubre'>Octubre</MenuItem>
+                                <MenuItem value='noviembre'>Noviembre</MenuItem>
+                                <MenuItem value='diciembre'>Diciembre</MenuItem>
                               </Select>
                             </FormControl>
                           </Grid>
