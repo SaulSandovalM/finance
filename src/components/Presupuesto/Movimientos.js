@@ -18,20 +18,15 @@ import {
   MenuItem,
   FormControl,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination
+  Snackbar,
+  Alert
 } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
 // Number Format
 import PropTypes from 'prop-types'
 import NumberFormat from 'react-number-format'
 // Firebase
-import { getDatabase, ref, child, get, orderByChild } from 'firebase/database'
-
+import { getDatabase, ref, child, get, orderByChild, push } from 'firebase/database'
 // Fecha actual
 var today = new Date()
 var meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -67,38 +62,12 @@ NumberFormatCustom.propTypes = {
   onChange: PropTypes.func.isRequired
 }
 
-// Table example
 const columns = [
-  { id: 'tipoDocuemnto', label: 'Tipo de Movimiento' },
-  { id: 'importe', label: 'Importe', format: (value) => value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) },
-  { id: 'oficioAutorizacion', label: 'Oficio de Autorización' },
-  { id: 'mesAfectado', label: 'Mes Afectado' },
-];
-
-function createData(tipoDocuemnto, importe, oficioAutorizacion, mesAfectado) {
-  return { tipoDocuemnto, importe, oficioAutorizacion, mesAfectado }
-}
-
-const rows = [
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-  createData('Ampliación', 1324171354, 'PGJH-2022', 'Enero'),
-];
+  { field: 'tipoMovimiento', headerName: 'Tipo de Movimiento', flex: 1 },
+  { field: 'cantidad', headerName: 'Importe', flex: 1 },
+  { field: 'oficioAutorizacion', headerName: 'Oficio de autorización', flex: 1 },
+  { field: 'mesAfectado', headerName: 'Mes afectado', flex: 1},
+]
 
 export default function Movimientos (props) {
   const [steps, setSteps] = useState(['Partida inicial', 'Partida destino', 'Resumen'])
@@ -109,18 +78,20 @@ export default function Movimientos (props) {
   const [partidaList, setPartidaList] = useState([])
   const [rubroList, setRubroList] = useState([])
   const [inicialId, setInicialId] = useState([])
-  // States de Partida Destino
+  // States Destino
   const [upDestino, setUpDestino] = useState('')
   const [partidaDestinoList, setPartidaDestinoList] = useState([])
   const [partidaDestino, setPartidaDestino] = useState('')
   const [rubroDestinoList, setRubroDestinoList] = useState([])
   const [rubroDestino, setRubroDestino] = useState('')
   const [destinoId, setDestinoId] = useState([])
-  //
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(13)
+  // General
+  const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState('')
+  const [sever, setSever] = useState('')
   const [activeStep, setActiveStep] = useState(0)
   const [presupuesto, setPresupuesto] = useState([])
+  const [movimientos, setMovimientos] = useState([])
   const [state, setState] = useState({
     cantidad: 0,
     oficioAutorizacion: '',
@@ -130,13 +101,11 @@ export default function Movimientos (props) {
     mesDestino: ''
   })
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value)
-    setPage(0)
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+    setOpen(false)
   }
 
   const handleChange = (event) => {
@@ -176,7 +145,27 @@ export default function Movimientos (props) {
     }).catch((error) => {
       console.error(error)
     })
-  }, [])
+    // Get Movimientos
+    get(child(dbRef, 'movimientos')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var arrayMovimientos = []
+        snapshot.forEach((child) => {
+          arrayMovimientos.push({
+            id: child.key,
+            tipoMovimiento: child.val().tipoMovimiento,
+            cantidad: child.val().cantidad,
+            oficioAutorizacion: child.val().oficioAutorizacion,
+            mesAfectado: child.val().mesAfectado
+          })
+        })
+        setMovimientos(arrayMovimientos)
+      } else {
+        console.log('Datos no disponibles')
+      }
+    }).catch((error) => {
+      console.error(error)
+    })
+  }, [sever])
 
   const handleChangeUp = (event) => {
     setUp(event.target.value)
@@ -269,7 +258,6 @@ export default function Movimientos (props) {
         let partidaDestinoFilter = arrayPartidaDestino.map(item => { return item.partida })
         let resultPartidaDestino = partidaDestinoFilter.filter((item, index) => { return partidaDestinoFilter.indexOf(item) === index })
         setPartidaDestinoList(resultPartidaDestino)
-        console.log(resultPartidaDestino)
       } else {
         console.log('Datos no disponibles')
       }
@@ -336,12 +324,12 @@ export default function Movimientos (props) {
 
   const handleSubmit = (event) => {
     const db = getDatabase()
-    var saveInicial = {
+    push(ref(db, 'movimientos'), {
       tipoMovimiento: tipoMovimiento,
       up: up,
       partida: partida,
       rubro: rubro,
-      importe: state.cantidad,
+      cantidad: parseFloat(state.cantidad),
       oficioAutorizacion: state.oficioAutorizacion,
       mesAfectado: state.mes,
       // Partida Destino
@@ -351,10 +339,17 @@ export default function Movimientos (props) {
       cantidadDestino: state.cantidadDestino,
       mesDestino: state.mesDestino,
       // idPartidaAfectada
-      idPartidaAfectada: inicialId[0].id
-    }
-    console.log(saveInicial)
-
+      idPartidaAfectada: inicialId[0].id,
+      fecha: Date.now()
+    }).then(() => {
+      setSever('success')
+      setMessage('Carga Exitosa')
+      setOpen(true)
+    }).catch(() => {
+      setSever('error')
+      setMessage('Error al cargar')
+    })
+    // Reset States
     setTipoMovimiento('')
     setUp('')
     setPartida('')
@@ -382,6 +377,19 @@ export default function Movimientos (props) {
 
   return (
     <div>
+      <Snackbar
+        open={open}
+        autoHideDuration={5000}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <Alert onClose={handleClose} severity={sever} variant="filled">
+          {message}
+        </Alert>
+      </Snackbar>
       <CssBaseline />
         <Grid container spacing={2}>
           <Grid item xs={12} md={12} lg={4.5}>
@@ -509,9 +517,6 @@ export default function Movimientos (props) {
                                 name='mes'
                                 onChange={handleChange}
                               >
-                                <MenuItem value=''>
-                                  <em>Ninguno</em>
-                                </MenuItem>
                                 <MenuItem value='enero'>Enero</MenuItem>
                                 <MenuItem value='febrero'>Febrero</MenuItem>
                                 <MenuItem value='marzo'>Marzo</MenuItem>
@@ -680,7 +685,7 @@ export default function Movimientos (props) {
                             <Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
                               Realizo
                             </Typography>
-                            <Typography gutterBottom>{props.user.email}</Typography>
+                            <Typography gutterBottom>{props.user.nombre}</Typography>
                             <Typography gutterBottom>{today}</Typography>
                           </Grid>
                           <Grid item container direction='column' xs={12} sm={6}>
@@ -745,56 +750,44 @@ export default function Movimientos (props) {
               </Fragment>
             </Paper>
           </Grid>
-          <Grid item xs={12} md={12} lg={7.5}>
-            <Paper variant='outlined' sx={{ p: { xs: 2, md: 3 }, height: '88vh' }}>
-              <TableContainer sx={{ height: '95%' }}>
-                <Table stickyHeader aria-label='sticky table'>
-                  <TableHead>
-                    <TableRow>
-                      {columns.map((column) => (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rows
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((row) => {
-                        return (
-                          <TableRow hover role='checkbox' tabIndex={-1} key={row.code}>
-                            {columns.map((column) => {
-                              const value = row[column.id];
-                              return (
-                                <TableCell key={column.id} align={column.align}>
-                                  {column.format && typeof value === 'number'
-                                    ? '$ ' + column.format(value)
-                                    : value}
-                                </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[]}
-                component='div'
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-              />
-            </Paper>
+          <Grid item xs={12} md={12} lg={7.5} sx={{ height: '88vh' }}>
+            <DataGrid
+              rows={movimientos}
+              columns={columns}
+              pageSize={13}
+              disableSelectionOnClick
+              autoPageSize
+              localeText={{
+                noResultsOverlayLabel: 'No hay resultados',
+                errorOverlayDefaultLabel: 'A ocurrido un error',
+                noRowsLabel: 'No hay datos cargados',
+                toolbarExport: 'Exportar',
+                toolbarExportLabel: 'Exportar',
+                toolbarExportCSV: 'Descargar como CSV',
+                columnMenuShowColumns: 'Ver columnas',
+                columnMenuFilter: 'Filtrar',
+                columnMenuHideColumn: 'Ocultar',
+                columnMenuUnsort: 'Desordenar',
+                columnMenuSortAsc: 'Ordenar Arriba',
+                columnMenuSortDesc: 'Ordenar Abajo',
+                filterPanelOperators: 'Operaciones',
+                filterPanelColumns: 'Columnas',
+                filterPanelInputLabel: 'Valor',
+                filterPanelInputPlaceholder: 'Valor a filtrar',
+                filterPanelDeleteIconLabel: 'Borrar',
+                filterOperatorContains: 'contiene',
+                filterOperatorEquals: 'igual',
+                filterOperatorStartsWith: 'empieza con',
+                filterOperatorEndsWith: 'termina con',
+                filterOperatorIsEmpty: 'esta vacio',
+                filterOperatorIsNotEmpty: 'no esta vacio',
+                filterOperatorIsAnyOf: 'es cualquiera de',
+                columnsPanelTextFieldLabel: 'Buscar columna',
+                columnsPanelTextFieldPlaceholder: 'Titulo',
+                columnsPanelShowAllButton: 'Ver todos',
+                columnsPanelHideAllButton: 'Ocultar todos'
+              }}
+            />
           </Grid>
         </Grid>
     </div>

@@ -15,12 +15,14 @@ import InboxIcon from '@mui/icons-material/MoveToInbox'
 import MailIcon from '@mui/icons-material/Mail'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import AccountBalanceWallet  from '@mui/icons-material/AccountBalanceWallet'
 // Components
 // import Home from './components/Home'
 import Login from './components/Login'
 // Presupuesto
 import Presupuesto from './components/presupuesto/Presupuesto'
 import Movimientos from './components/presupuesto/Movimientos'
+import Disponible from './components/presupuesto/Disponible'
 // import FondoRevolvente from './components/presupuesto/FondoRevolvente'
 // Fondos
 import Comprometidos from './components/fondos/Comprometidos'
@@ -155,7 +157,7 @@ export default function App () {
                   <MenuIcon />
                 </IconButton>
                 <Typography variant='h6' noWrap component='div'>
-                  Direccion General de Finanzas
+                  Direccion General de Administración
                 </Typography>
               </Toolbar>
             </AppBar>
@@ -223,6 +225,16 @@ export default function App () {
                     </ListItem>
                   </Link>
                 }
+                {user.role === 'presupuesto' &&
+                  <Link to='/Disponible' style={{ textDecoration: 'none', color: 'black' }}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <AccountBalanceWallet />
+                      </ListItemIcon>
+                      <ListItemText primary={'Disponible'} />
+                    </ListItem>
+                  </Link>
+                }
               </List>
               {user.role === 'tesoreria' ?
                 <div>
@@ -267,6 +279,7 @@ export default function App () {
                 {/* Presupuesto */}
                 <Route path='/Presupuesto' element={<Presupuesto />} />
                 <Route path='/Movimientos' element={<Movimientos user={user} />} />
+                <Route path='/Disponible' element={<Disponible />} />
                 {/* <Route exact path='/presupuesto/:id' component={EditarPresupuesto} />
                 <Route path='/FondoRevolvente' element={<FondoRevolvente />} />
                 <Route exact path='/archivos' component={Archivos} />
